@@ -2313,43 +2313,47 @@
 
         // ==========================================
         // ==========================================
-        // FETCH DATA MITRA DINAMIS
+        // FETCH DATA MITRA DINAMIS (TANPA CACHE)
         // ==========================================
-        const scriptURL = SETTING_SCRIPT_URL; // Gunakan URL dari atas
         let allMitraData = [];
         
         async function loadMitra() {
             const container = document.getElementById('mitraContainer');
             
-            // LOGIKA BARU: Cek Local Storage (Cache Browser) biar instan!
-            const cachedMitra = sessionStorage.getItem('mitraDataCache');
-            if (cachedMitra) {
-                allMitraData = JSON.parse(cachedMitra);
-                renderMitraTeaser();
+            // Panggil variabel URL dengan aman dari script di atas
+            const finalScriptUrl = (typeof SETTING_SCRIPT_URL !== 'undefined') ? SETTING_SCRIPT_URL : '';
+
+            if (!finalScriptUrl) {
+                if(container) container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #dc2626; font-weight: bold;">Error: URL Server belum diatur di script HTML.</div>`;
+                return;
             }
 
             try {
                 let fd = new FormData();
                 fd.append('action', 'get_public_stores'); 
                 
-                const response = await fetch(scriptURL, { method: 'POST', body: fd });
+                const response = await fetch(finalScriptUrl, { method: 'POST', body: fd });
+                
+                if (!response.ok) {
+                    throw new Error("Gagal terhubung ke server Google Apps Script.");
+                }
+
                 const res = await response.json();
                 
-                if (res.success && res.data.length > 0) {
+                if (res.success && res.data && res.data.length > 0) {
                     allMitraData = res.data;
-                    sessionStorage.setItem('mitraDataCache', JSON.stringify(res.data)); // Simpan ke cache browser
+                    // Langsung render data segar dari server
                     renderMitraTeaser();
-                } else if (!cachedMitra) {
-                    container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--muted);">Belum ada mitra yang bergabung.</div>`;
+                } else {
+                    if (container) container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--muted);">Belum ada mitra yang bergabung.</div>`;
                 }
             } catch (error) {
                 console.error("Gagal memuat mitra:", error);
-                if (!cachedMitra) {
-                    container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--muted);">Gagal memuat daftar mitra.</div>`;
+                if (container) {
+                    container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #dc2626; font-weight: bold;">Gagal memuat daftar mitra. Silakan muat ulang halaman.</div>`;
                 }
             }
         }
-
         function renderMitraTeaser() {
             const container = document.getElementById('mitraContainer');
             const loadMoreContainer = document.getElementById('loadMoreContainer');
