@@ -604,30 +604,36 @@
     async function loadMitra() {
         const container = document.getElementById('mitraContainer');
 
-        // LOGIKA BARU: Cek session storage (Cache Browser) biar instan!
-        const cachedMitra = sessionStorage.getItem('mitraDataCache');
-        if (cachedMitra) {
-            allMitraData = JSON.parse(cachedMitra);
-            renderMitra();
+        // Panggil variabel URL dengan aman dari script di atas
+        const finalScriptUrl = (typeof SETTING_SCRIPT_URL !== 'undefined') ? SETTING_SCRIPT_URL : '';
+
+        if (!finalScriptUrl) {
+            if(container) container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #dc2626; font-weight: bold;">Error: URL Server belum diatur di script HTML.</div>`;
+            return;
         }
 
         try {
             let fd = new FormData();
             fd.append('action', 'get_public_stores'); 
             
-            const response = await fetch(scriptURL, { method: 'POST', body: fd });
+            const response = await fetch(finalScriptUrl, { method: 'POST', body: fd });
+            
+            if (!response.ok) {
+                throw new Error("Gagal terhubung ke server Google Apps Script.");
+            }
+
             const res = await response.json();
             
-            if (res.success && res.data.length > 0) {
+            if (res.success && res.data && res.data.length > 0) {
                 allMitraData = res.data;
-                sessionStorage.setItem('mitraDataCache', JSON.stringify(res.data)); // Update cache browser
+                // Langsung render tanpa simpan ke cache
                 renderMitra();
-            } else if (!cachedMitra) {
-                container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--muted); font-weight: bold;">Belum ada mitra yang bergabung.</div>`;
+            } else {
+                if (container) container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--muted); font-weight: bold;">Belum ada mitra yang bergabung.</div>`;
             }
         } catch (error) {
             console.error("Gagal memuat mitra:", error);
-            if (!cachedMitra) {
+            if (container) {
                 container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #dc2626; font-weight: bold;">Gagal terhubung ke server. Silakan muat ulang.</div>`;
             }
         }
@@ -640,26 +646,30 @@
         // Ambil data sejumlah mitraDisplayed
         const toDisplay = allMitraData.slice(0, mitraDisplayed);
         
-        container.innerHTML = toDisplay.map(toko => {
-            const logoHtml = toko.logo 
-                ? `<img src="${toko.logo}" alt="Logo">` 
-                : toko.nama.charAt(0).toUpperCase();
-            
-            return `
-            <div class="mitra-card">
-                <div class="mitra-logo">${logoHtml}</div>
-                <h4 class="mitra-name">${toko.nama}</h4>
-                <div class="mitra-badge">✓ Toko Online Aktif</div>
-                <a href="/${toko.slug}" target="_blank" class="mitra-link">Kunjungi Toko</a>
-            </div>
-            `;
-        }).join('');
+        if (container) {
+            container.innerHTML = toDisplay.map(toko => {
+                const logoHtml = toko.logo 
+                    ? `<img src="${toko.logo}" alt="Logo">` 
+                    : toko.nama.charAt(0).toUpperCase();
+                
+                return `
+                <div class="mitra-card">
+                    <div class="mitra-logo">${logoHtml}</div>
+                    <h4 class="mitra-name">${toko.nama}</h4>
+                    <div class="mitra-badge">✓ Toko Online Aktif</div>
+                    <a href="/${toko.slug}" target="_blank" class="mitra-link">Kunjungi Toko</a>
+                </div>
+                `;
+            }).join('');
+        }
 
         // Cek apakah tombol Load More harus ditampilkan atau disembunyikan
-        if (allMitraData.length > mitraDisplayed) {
-            loadMoreContainer.style.display = 'block';
-        } else {
-            loadMoreContainer.style.display = 'none';
+        if (loadMoreContainer) {
+            if (allMitraData.length > mitraDisplayed) {
+                loadMoreContainer.style.display = 'block';
+            } else {
+                loadMoreContainer.style.display = 'none';
+            }
         }
     }
 
@@ -675,10 +685,11 @@
         // Auto-open modal jika dari halaman login mengklik "Daftar Gratis"
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('register') === 'true') {
-            setTimeout(() => openModal(), 300);
+            if (typeof openModal === 'function') {
+                setTimeout(() => openModal(), 300);
+            }
         }
     });
-
     // SUBMIT FORM PENDAFTARAN
     const form = document.getElementById('googleSheetForm');
     const submitBtn = document.getElementById('submitBtn');
