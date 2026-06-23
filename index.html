@@ -11,7 +11,7 @@
     
     <script>
         // URL DEPLOY TERBARU LO SUDAH DIPASANG DI SINI BOS!
-        const SETTING_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzcD9uvXZ8KHmUPG8-_MiRYW5BOWqGufoghbDQ5X4EVVCv6K33RNkBmnxVB4O2GmvUVAg/exec';
+        const SETTING_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz2KfFunnBQ0QI-R9hmwP4dfn33dkEiR8389V5s1QGo-JI8zVchlB6sLmToWM53xmJGrQ/exec';
         
         let fdSettings = new FormData();
         fdSettings.append('action', 'get_app_settings');
@@ -2312,44 +2312,40 @@
         }
 
         // ==========================================
-        // FETCH DATA MITRA DINAMIS (TANPA CACHE)
         // ==========================================
+        // FETCH DATA MITRA DINAMIS
+        // ==========================================
+        const scriptURL = SETTING_SCRIPT_URL; // Gunakan URL dari atas
         let allMitraData = [];
         
         async function loadMitra() {
             const container = document.getElementById('mitraContainer');
             
-            // Panggil variabel URL dengan aman dari script di atas
-            const finalScriptUrl = (typeof SETTING_SCRIPT_URL !== 'undefined') ? SETTING_SCRIPT_URL : '';
-
-            if (!finalScriptUrl) {
-                if(container) container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #dc2626; font-weight: bold;">Error: URL Server belum diatur di script HTML.</div>`;
-                return;
+            // LOGIKA BARU: Cek Local Storage (Cache Browser) biar instan!
+            const cachedMitra = sessionStorage.getItem('mitraDataCache');
+            if (cachedMitra) {
+                allMitraData = JSON.parse(cachedMitra);
+                renderMitraTeaser();
             }
 
             try {
                 let fd = new FormData();
                 fd.append('action', 'get_public_stores'); 
                 
-                const response = await fetch(finalScriptUrl, { method: 'POST', body: fd });
-                
-                if (!response.ok) {
-                    throw new Error("Gagal terhubung ke server Google Apps Script.");
-                }
-
+                const response = await fetch(scriptURL, { method: 'POST', body: fd });
                 const res = await response.json();
                 
-                if (res.success && res.data && res.data.length > 0) {
+                if (res.success && res.data.length > 0) {
                     allMitraData = res.data;
-                    // Langsung render data segar dari server tanpa disimpan ke cache
+                    sessionStorage.setItem('mitraDataCache', JSON.stringify(res.data)); // Simpan ke cache browser
                     renderMitraTeaser();
-                } else {
-                    if (container) container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--muted);">Belum ada mitra yang bergabung.</div>`;
+                } else if (!cachedMitra) {
+                    container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--muted);">Belum ada mitra yang bergabung.</div>`;
                 }
             } catch (error) {
                 console.error("Gagal memuat mitra:", error);
-                if (container) {
-                    container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #dc2626; font-weight: bold;">Gagal memuat daftar mitra. Silakan muat ulang halaman.</div>`;
+                if (!cachedMitra) {
+                    container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--muted);">Gagal memuat daftar mitra.</div>`;
                 }
             }
         }
@@ -2377,7 +2373,7 @@
             }).join('');
 
             // Tampilkan tombol ke halaman mitra.html jika toko lebih dari 8
-            if (allMitraData.length > 8 && loadMoreContainer) {
+            if (allMitraData.length > 8) {
                 loadMoreContainer.style.display = 'block';
             }
         }
@@ -2389,9 +2385,7 @@
             // Auto-open modal jika dari halaman login mengklik "Daftar Gratis"
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('register') === 'true') {
-                if (typeof openModal === 'function') {
-                    setTimeout(() => openModal(), 300);
-                }
+                setTimeout(() => openModal(), 300);
             }
         });
 
