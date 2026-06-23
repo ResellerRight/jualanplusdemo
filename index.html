@@ -2312,7 +2312,6 @@
         }
 
         // ==========================================
-        // ==========================================
         // FETCH DATA MITRA DINAMIS (TANPA CACHE)
         // ==========================================
         let allMitraData = [];
@@ -2342,7 +2341,7 @@
                 
                 if (res.success && res.data && res.data.length > 0) {
                     allMitraData = res.data;
-                    // Langsung render data segar dari server
+                    // Langsung render data segar dari server tanpa disimpan ke cache
                     renderMitraTeaser();
                 } else {
                     if (container) container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--muted);">Belum ada mitra yang bergabung.</div>`;
@@ -2354,6 +2353,7 @@
                 }
             }
         }
+
         function renderMitraTeaser() {
             const container = document.getElementById('mitraContainer');
             const loadMoreContainer = document.getElementById('loadMoreContainer');
@@ -2377,7 +2377,7 @@
             }).join('');
 
             // Tampilkan tombol ke halaman mitra.html jika toko lebih dari 8
-            if (allMitraData.length > 8) {
+            if (allMitraData.length > 8 && loadMoreContainer) {
                 loadMoreContainer.style.display = 'block';
             }
         }
@@ -2389,7 +2389,9 @@
             // Auto-open modal jika dari halaman login mengklik "Daftar Gratis"
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('register') === 'true') {
-                setTimeout(() => openModal(), 300);
+                if (typeof openModal === 'function') {
+                    setTimeout(() => openModal(), 300);
+                }
             }
         });
 
