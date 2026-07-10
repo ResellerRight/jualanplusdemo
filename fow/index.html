@@ -1,5 +1,3 @@
-
-
 <style>
 .im-wrapper { 
     font-family: 'Inter', sans-serif; 
@@ -168,17 +166,39 @@
     <div class="im-header" style="background: linear-gradient(135deg, #0ea5e9, #1e3a8a)">
         <img src="undefined" class="im-logo" alt="Logo">
 
-        <h2 class="im-title" style="color: #ffffff;">Formulir Pemesanan Produk</h2>
+        <h2 class="im-title" style="color: #ffffff;">Reservasi Jadwal Layanan</h2>
 
     </div>
     <form id="im-form" class="im-body" onsubmit="return false;">
         <div class="im-group">
-    <label class="im-label">Nama Penerima <span style="color:#e11d48">*</span></label>
-    <input type="text" name="Nama Penerima" class="im-input" placeholder="Nama yang akan tertera di paket" required>
+    <label class="im-label">Nama Pelanggan <span style="color:#e11d48">*</span></label>
+    <input type="text" name="Nama Pelanggan" class="im-input" placeholder="Nama Anda" required>
 </div>
 <div class="im-group">
-    <label class="im-label">No HP / WhatsApp Aktif <span style="color:#e11d48">*</span></label>
-    <input type="tel" name="No HP / WhatsApp Aktif" class="im-input" placeholder="Pastikan nomor bisa dihubungi kurir" required>
+    <label class="im-label">Nomor HP (Bisa Dihubungi) <span style="color:#e11d48">*</span></label>
+    <input type="tel" name="Nomor HP (Bisa Dihubungi)" class="im-input" placeholder="08xxxx" required>
+</div>
+<div class="im-group">
+    <label class="im-label">Layanan yang Dipilih <span style="color:#e11d48">*</span></label>
+    <div class="im-checkbox-group">
+        <label class="im-checkbox-label"><input type="checkbox" name="Layanan yang Dipilih" value="Hair Spa"> Hair Spa</label>
+        <label class="im-checkbox-label"><input type="checkbox" name="Layanan yang Dipilih" value="Creambath"> Creambath</label>
+        <label class="im-checkbox-label"><input type="checkbox" name="Layanan yang Dipilih" value="Facial Glow"> Facial Glow</label>
+        <label class="im-checkbox-label"><input type="checkbox" name="Layanan yang Dipilih" value="Manicure & Pedicure"> Manicure & Pedicure</label>
+        <label class="im-checkbox-label"><input type="checkbox" name="Layanan yang Dipilih" value="Pijat Refleksi"> Pijat Refleksi</label>
+    </div>
+</div>
+<div class="im-group">
+    <label class="im-label">Pilih Tanggal Kedatangan <span style="color:#e11d48">*</span></label>
+    <input type="date" name="Pilih Tanggal Kedatangan" class="im-input" placeholder="" required>
+</div>
+<div class="im-group">
+    <label class="im-label">Pilih Jam Kedatangan <span style="color:#e11d48">*</span></label>
+    <input type="time" name="Pilih Jam Kedatangan" class="im-input" placeholder="" required>
+</div>
+<div class="im-group">
+    <label class="im-label">Catatan Tambahan </label>
+    <textarea name="Catatan Tambahan" class="im-input" placeholder="Misal: Tolong siapkan terapis wanita..." rows="3" ></textarea>
 </div>
 
         <div class="im-footer">
@@ -195,8 +215,8 @@
                         <polyline points="9 12 11 14 15 10"></polyline>
                     </svg>
                     <div>
-                        <div class="im-trust-title">Pasti Aman</div>
-                        <div class="im-trust-desc">Bayar Aman di Tempat (COD) Setelah Barang Sampai.</div>
+                        <div class="im-trust-title"></div>
+                        <div class="im-trust-desc"></div>
                     </div>
                 </div>
             
@@ -208,7 +228,7 @@
                     </div>
                 </div>
             
-            <button id="im-submit-btn" type="submit" class="im-btn" style="background: linear-gradient(135deg, #60a5fa, #2563eb)"><span style="color: #ffffff;">🛒 Proses Order Sekarang</span></button>
+            <button id="im-submit-btn" type="submit" class="im-btn" style="background: linear-gradient(135deg, #60a5fa, #2563eb)"><span style="color: #ffffff;">📅 Konfirmasi Jadwal</span></button>
         </div>
     </form>
     
@@ -303,7 +323,7 @@ let sessionLeadId = 'LD_' + Date.now() + '_' + Math.random().toString(36).substr
 (function() {
     const sheetUrl = 'https://script.google.com/macros/s/AKfycbzJtkwRKHXq5YH_S4tspuzz5B3N_FdOKy1bT6Ovqcqn8m9tPQufedB6M85fzW1jMOpZ/exec';
     if(sheetUrl && sheetUrl.startsWith('http')) {
-        fetch(sheetUrl + "?action=track_view&form_name=" + encodeURIComponent('Formulir Pemesanan Produk'), {
+        fetch(sheetUrl + "?action=track_view&form_name=" + encodeURIComponent('Reservasi Jadwal Layanan'), {
             method: 'GET',
             mode: 'no-cors'
         });
@@ -330,8 +350,8 @@ formElCap.addEventListener('input', function(e) {
             
             let jsonData = {
                 Waktu_Order: new Date().toLocaleString(),
-                Nama_Form: 'Formulir Pemesanan Produk',
-                wa_target: '',
+                Nama_Form: 'Reservasi Jadwal Layanan',
+                wa_target: '6281398077819',
                 Status_Pesanan: 'UNFINISHED',
                 Lead_ID: sessionLeadId
             };
@@ -382,8 +402,8 @@ document.getElementById('im-form').addEventListener('submit', function(e) {
     
     let jsonData = { 
         Waktu_Order: new Date().toLocaleString(), 
-        Nama_Form: 'Formulir Pemesanan Produk', 
-        wa_target: '',
+        Nama_Form: 'Reservasi Jadwal Layanan', 
+        wa_target: '6281398077819',
         Status_Pesanan: 'SUBMITTED',
         Lead_ID: sessionLeadId
     }; 
